@@ -8,7 +8,7 @@ var r_if    = /^if\s+(.+)$/,
 	r_d = /\\/g, r_q = /'/g, r_m = /[\r\n]/g, r_b = /[\t\b\f]/g;
 var split = (function(){
 	var r_split = /{%(.*?)%}/gm, r_parse = /^(.*?){%(.*?)%}/m;
-	return ' {%2%} '.split(r_split)[1] == '1' ? function(template){
+	return ' {%1%} '.split(r_split)[1] == '1' ? function(template){
 		return template.split(r_split);
 	} : function(template){
 		var m, ret = [];
