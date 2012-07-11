@@ -1,42 +1,37 @@
 // simple template engine
 (function(){
-var r_if    = /^if\s+(.+)$/,
-	r_elif  = /^elif\s+(.+)$/,
-	r_each  = /^each\s+(.+)\s+as\s+(\w+)(?:\s*,\s*(\w+))?$/,
-	r_var   = /^(\w+)\s*=\s*(.+)$/,
-	r_trim  = /^[\s\xA0]+|[\s\xA0]+$/,
-	r_d = /\\/g, r_q = /'/g, r_m = /[\r\n]/g, r_b = /[\t\b\f]/g;
-var split = (function(){
-	var r_split = /{%(.*?)%}/gm, r_parse = /^(.*?){%(.*?)%}/m;
-	return ' {%1%} '.split(r_split)[1] == '1' ? function(template){
-		return template.split(r_split);
-	} : function(template){
-		var m, ret = [];
-		while (m = r_parse.exec(template)) {
-			template = template.substr(m[0].length);
-			ret.push(m[1]);
-			ret.push(m[2]);
-		}
-		ret.push(template);
-		return ret;
-	}
-})();
+var R_IF    = /^if\s+(.+)$/,
+	R_ELIF  = /^elif\s+(.+)$/,
+	R_EACH  = /^each\s+(.+)\s+as\s+(\w+)(?:\s*,\s*(\w+))?$/,
+	R_VAR   = /^(\w+)\s*=\s*(.+)$/,
+	R_TRIM  = /^[\s\xA0]+|[\s\xA0]+$/,
+	R_D = /\\/g, R_Q = /'/g, R_M = /[\t\b\f\r\n]/g,
+
+	T_OPEN = '{%', T_CLOSE = '%}',
+
+	toString = Object.prototype.toString,
+
+	trim = (function(){
+		return String.prototype.trim ? function(str){
+			return str.trim();
+		} : function(str){
+			return str.replace(R_TRIM, '');
+		};
+	})();
+
 function q(str){
-	return "'"+str.replace(r_d, "\\\\").replace(r_q, "\\'").replace(r_b, ' ')+"'";
-}
-function trim(str){
-	return str.trim ? str.trim() : str.replace(r_trim, '');
+	return "'"+str.replace(R_D, "\\\\").replace(R_Q, "\\'").replace(R_M, ' ')+"'";
 }
 function expr(str){
 	return '(function(){try{return('+str+')}catch(e){return""}})()';	
 }
 function compile(template){
-	var chunk = split(template.replace(r_m, ' '));
-	var body = ['var _O=[];'];
-	for (var i=0,l=chunk.length,token;i<l;i++) {
-		token = chunk[i];
-		if (i%2) {
-			token = trim(token);
+	var body = ['var _O=[];'], part;
+	template = template.split(T_OPEN);
+	body.push("_O.push("+q(template.shift())+");");
+	while (part = template.shift()) {
+		var parts = part.split(T_CLOSE), token;
+		if (parts.length > 1 && (token = trim(parts.shift()))) {
 			switch(true){
 			// {%fi%}
 			case token == 'fi': body.push('}'); break;
@@ -45,19 +40,19 @@ function compile(template){
 			// {%else%}
 			case token == 'else': body.push('}else{'); break;
 			// {%if expr%}
-			case r_if.test(token):
+			case R_IF.test(token):
 				body.push("if("+expr(RegExp.$1)+"){");
 				break;
 			// {%elif expr%}
-			case r_elif.test(token):
+			case R_ELIF.test(token):
 				body.push("}else if("+expr(RegExp.$1)+"){");
 				break;
 			// {%each expr as value,key%}
-			case r_each.test(token):
+			case R_EACH.test(token):
 				body.push("this.each("+expr(RegExp.$1)+",function("+(RegExp.$3 || "_P") + "," + RegExp.$2 + "){");
 				break;
 			// {%var=expr%}
-			case r_var.test(token):
+			case R_VAR.test(token):
 				body.push("var "+RegExp.$1+"="+expr(RegExp.$2)+";");
 				break;
 			// {%expr%}
@@ -65,9 +60,8 @@ function compile(template){
 				body.push("_O.push("+expr(token)+");");
 				break;
 			}
-		} else {
-			body.push("_O.push("+q(token)+");");
 		}
+		body.push("_O.push("+q(parts.join(T_CLOSE))+");");
 	}
 	body.push('return _O.join("");');
 	return body.join('');
@@ -80,7 +74,7 @@ Template.each = function(object, callback) {
 	var key, i = 0,
 		length = object.length;
 	
-	if (length === undefined || Object.prototype.toString.call(object) == '[object Function]') {
+	if (length === undefined || toString.call(object) == '[object Function]') {
 		for (key in object) {
 			callback.call(object[key], key, object[key]);
 		}
