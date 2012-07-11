@@ -6,8 +6,23 @@
 	<script src="template.js" type="text/javascript"></script>
 </head>
 <body>
+<script type="text/template" id="tpl">
+<html>
+	<div>
+	{%somevar%}
+	</div>
+	<a>
+	{%somevar%}{%somevar%}
+	</a>
+	{%if 1%}
+	{%somevar%}
+	{%else%}
+	kk{%somevar%}
+	{%fi%}
+</html>
+</script>
 <script>
-var tpl = '{%somevar%}';
+var tpl = document.getElementById('tpl').innerHTML;
 var t = new Template(tpl);
 console.info(t.render({somevar:'other'}));
 </script>

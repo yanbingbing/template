@@ -1,13 +1,28 @@
 // simple template engine
 (function(){
-var r_if   = /^if\s+(.+)$/,
-	r_elif = /^elif\s+(.+)$/,
-	r_each = /^each\s+(.+)\s+as\s+(\w+)(?:\s*,\s*(\w+))?$/,
-	r_var  = /^(\w+)\s*=\s*(.+)$/,
-	r_trim = /^[\s\xA0]+|[\s\xA0]+$/,
-	r_d = /\\/g, r_q = /'/g, r_m = /[\r\t\n\b\f]/g;
+var r_if    = /^if\s+(.+)$/,
+	r_elif  = /^elif\s+(.+)$/,
+	r_each  = /^each\s+(.+)\s+as\s+(\w+)(?:\s*,\s*(\w+))?$/,
+	r_var   = /^(\w+)\s*=\s*(.+)$/,
+	r_trim  = /^[\s\xA0]+|[\s\xA0]+$/,
+	r_d = /\\/g, r_q = /'/g, r_m = /[\r\n]/g, r_b = /[\t\b\f]/g;
+var split = (function(){
+	var r_split = /{%(.*?)%}/gm, r_parse = /^(.*?){%(.*?)%}/m;
+	return ' {%2%} '.split(r_split)[1] == '1' ? function(template){
+		return template.split(r_split);
+	} : function(template){
+		var m, ret = [];
+		while (m = r_parse.exec(template)) {
+			template = template.substr(m[0].length);
+			ret.push(m[1]);
+			ret.push(m[2]);
+		}
+		ret.push(template);
+		return ret;
+	}
+})();
 function q(str){
-	return "'"+str.replace(r_d, "\\\\").replace(r_q, "\\'").replace(r_m, ' ')+"'";
+	return "'"+str.replace(r_d, "\\\\").replace(r_q, "\\'").replace(r_b, ' ')+"'";
 }
 function trim(str){
 	return str.trim ? str.trim() : str.replace(r_trim, '');
@@ -16,7 +31,7 @@ function expr(str){
 	return '(function(){try{return('+str+')}catch(e){return""}})()';	
 }
 function compile(template){
-	var chunk = template.split(/{%(.*?)%}/gm);
+	var chunk = split(template.replace(r_m, ' '));
 	var body = ['var _O=[];'];
 	for (var i=0,l=chunk.length,token;i<l;i++) {
 		token = chunk[i];
