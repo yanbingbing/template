@@ -11,13 +11,11 @@ var R_IF    = /^if\s+(.+)$/,
 
 	toString = Object.prototype.toString,
 
-	trim = (function(){
-		return String.prototype.trim ? function(str){
-			return str.trim();
-		} : function(str){
-			return str.replace(R_TRIM, '');
-		};
-	})();
+	trim = String.prototype.trim ? function(str){
+		return str.trim();
+	} : function(str){
+		return str.replace(R_TRIM, '');
+	};
 
 function q(str){
 	return "'"+str.replace(R_D, "\\\\").replace(R_Q, "\\'").replace(R_M, ' ')+"'";
