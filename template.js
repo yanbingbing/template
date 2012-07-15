@@ -9,9 +9,9 @@ var R_IF    = /^if\s+(.+)$/,
 
 	T_OPEN = '{%', T_CLOSE = '%}',
 
-	toString = Object.prototype.toString,
+	toString = ({}).toString,
 
-	trim = String.prototype.trim ? function(str){
+	trim = ''.trim ? function(str){
 		return str.trim();
 	} : function(str){
 		return str.replace(R_TRIM, '');
