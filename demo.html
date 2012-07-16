@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Template Demo</title>
+	<script src="template.js" type="text/javascript"></script>
+</head>
+<body>
+<script type="text/template" id="tpl">
+<div style="border:1px solid #000; margin:5px 10px; padding:5px; background:#DDD;">
+{%if age<18%}
+	<p>Hello {%name%}!, you are not welcome!</p>
+{%else%}
+	<p>Hello {%name%}!, you are welcome!</p>
+{%endif%}
+
+{%if companies%}
+	<p>you have work in below companies</p>
+	<ul>
+		{%each companies as company%}
+		<li>{%company.startyear%}--{%company.endyear%} | <a href="{%company.url%}">{%company.name%}</a></li>
+		{%endeach%}
+	</ul>
+{%elseif schools%}
+	<p>you have study in school belows</p>
+	<ul>
+		{%each schools as school%}
+		<li>{%school.startyear%}--{%school.endyear%} | <a href="{%school.url%}">{%school.name%}</a></li>
+		{%endeach%}
+	</ul>
+{%else%}
+	<p>you must be a child</p>
+{%endif%}
+</div>
+</script>
+<script>
+var tpl = document.getElementById('tpl').innerHTML;
+var t = new Template(tpl);
+document.body.innerHTML += t.render({
+	name:'Li Lei',
+	age:18,
+	companies:[
+		{name:'cmstop', url:'http://cmstop.com', startyear:2009, endyear:'--'},
+		{name:'sohu', url:'http://sohu.com', startyear:2006, endyear:2009},
+		{name:'tencent', url:'http://tencent.com', startyear:2003, endyear:2006},
+		{name:'baidu', url:'http://baidu.com', startyear:2001, endyear:2003}
+	]
+});
+document.body.innerHTML += t.render({
+	name:'Li Ming',
+	age:18,
+	schools:[
+		{name:'Niujin', url:'http://niujin.com', startyear:2009, endyear:'--'},
+		{name:'Beida', url:'http://beida.com', startyear:2009, endyear:'--'}
+	]
+});
+document.body.innerHTML += t.render({
+	name:'Xiao Li',
+	age:17
+});
+</script>
+</body>
+</html>
