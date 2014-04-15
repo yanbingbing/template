@@ -51,7 +51,7 @@
     }
 
     function compile(template) {
-        var body = ['var __O=[];'], part;
+        var body = ['var __O=[];with(__I){'], part;
         template = template.split(T_OPEN);
         body.push("__O.push(" + quote(template.shift()) + ");");
         while (part = template.shift()) {
@@ -95,12 +95,13 @@
             }
             body.push("__O.push(" + quote(parts.join(T_CLOSE)) + ");");
         }
-        body.push('return __O.join("");');
+        body.push('} return __O.join("");');
         return body.join('');
     }
 
     var Template = function (template) {
-        this.template = compile(template);
+        this._render = new Function('__I, __EACH', compile(template));
+        console.info(this._render.toString())
     };
     Template.setOpenTag = function (tag) {
         T_OPEN = tag;
@@ -109,12 +110,7 @@
         T_CLOSE = tag;
     };
     Template.prototype.render = function (data) {
-        var body = [
-            'with(__I){',
-            this.template,
-            '}'
-        ].join('');
-        return (new Function('__I, __EACH', body))(data, each);
+        return this._render(data, each);
     };
 
     // EXPOSE
